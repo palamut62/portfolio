@@ -94,25 +94,22 @@ export default function Home() {
                   </div>
                 </section>
                 <section className="col-span-2">
-                  <h2 className="text-xl font-bold mb-3">İş Deneyimi</h2>
+                  <h2 className="text-xl font-bold mb-3">Projelerim</h2>
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-lg font-semibold">Kıdemli Full-Stack Geliştirici - XYZ Teknoloji</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Ocak 2018 - Günümüz</p>
-                      <ul className="list-disc list-inside space-y-1 text-sm">
-                        <li>Yüksek trafikli e-ticaret platformunun yeniden tasarımı ve geliştirilmesi</li>
-                        <li>Mikroservis mimarisine geçişin liderliği ve ölçeklenebilir altyapı kurulumu</li>
-                        <li>Junior geliştiricilere mentorluk ve teknik eğitimler düzenleme</li>
-                      </ul>
+                      <h3 className="text-lg font-semibold">E-Ticaret Platformu</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">React, Node.js, MongoDB</p>
+                      <p className="text-sm">Yüksek performanslı, ölçeklenebilir bir e-ticaret platformu. Özellikler: Kullanıcı kimlik doğrulama, ürün arama, sepet yönetimi, ödeme entegrasyonu.</p>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold">Full-Stack Geliştirici - ABC Yazılım</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Mart 2015 - Aralık 2017</p>
-                      <ul className="list-disc list-inside space-y-1 text-sm">
-                        <li>Çeşitli müşteri projelerinde full-stack geliştirme görevleri</li>
-                        <li>RESTful API'ler tasarlama ve uygulama</li>
-                        <li>Veritabanı optimizasyonu ve performans iyileştirmeleri</li>
-                      </ul>
+                      <h3 className="text-lg font-semibold">Task Yönetim Uygulaması</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Vue.js, Express, PostgreSQL</p>
+                      <p className="text-sm">Ekip çalışmasını kolaylaştıran bir görev yönetim uygulaması. Özellikler: Gerçek zamanlı güncellemeler, görev atama, ilerleme takibi, takvim entegrasyonu.</p>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">Yapay Zeka Destekli Chatbot</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Python, TensorFlow, Flask</p>
+                      <p className="text-sm">Müşteri hizmetleri için geliştirilmiş yapay zeka destekli chatbot. Özellikler: Doğal dil işleme, öğrenme yeteneği, çoklu dil desteği.</p>
                     </div>
                   </div>
                 </section>
