@@ -1,8 +1,11 @@
+'use client'
+
 import Image from "next/image";
 import { JetBrains_Mono } from "next/font/google";
 import { FaGithub, FaLinkedin, FaTwitter, FaEnvelope, FaMapMarkerAlt, FaPhone } from "react-icons/fa";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
+import { motion } from "framer-motion";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -12,114 +15,219 @@ const jetbrainsMono = JetBrains_Mono({
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
+  const [activeSection, setActiveSection] = useState('about');
+
+  const aboutRef = useRef<HTMLElement>(null);
+  const skillsRef = useRef<HTMLElement>(null);
+  const projectsRef = useRef<HTMLElement>(null);
+  const contactRef = useRef<HTMLElement>(null);
 
   useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      const sections = [
+        { id: 'about', ref: aboutRef },
+        { id: 'skills', ref: skillsRef },
+        { id: 'projects', ref: projectsRef },
+        { id: 'contact', ref: contactRef },
+      ];
+
+      for (const section of sections) {
+        if (section.ref.current && scrollPosition >= section.ref.current.offsetTop - 100) {
+          setActiveSection(section.id);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   if (!mounted) return null;
 
   const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const sectionRef = {
+      about: aboutRef,
+      skills: skillsRef,
+      projects: projectsRef,
+      contact: contactRef,
+    }[sectionId];
+
+    sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <div className={`${jetbrainsMono.variable} min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-[family-name:var(--font-jetbrains-mono)] flex flex-col`}>
-      <div className="absolute top-4 right-4">
-        <button
-          onClick={toggleTheme}
-          className="p-2 rounded-full bg-transparent"
-          aria-label="Tema değiştir"
-        >
-          {theme === 'dark' ? (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-            </svg>
-          )}
-        </button>
-      </div>
-      <main className="flex-grow container mx-auto px-6 py-8 max-w-7xl flex items-center">
-        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden w-full" style={{height: '80vh'}}>
-          <div className="flex h-full">
-            <div className="w-1/4 p-6 border-r border-gray-200 dark:border-gray-700 flex flex-col justify-between">
-              <div className="text-center">
-                <Image
-                  src="/profile-picture.jpg"
-                  alt="Geliştirici Adı"
-                  width={180}
-                  height={180}
-                  className="rounded-full mx-auto mb-4"
-                />
-                <h1 className="text-2xl font-bold mb-2">Geliştirici Adı</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">Kıdemli Full-Stack Geliştirici</p>
-              </div>
-              <div className="mt-auto">
-                <div className="space-y-2 text-sm mb-4">
-                  <p className="flex items-center justify-center"><FaMapMarkerAlt className="mr-2" /> İstanbul, Türkiye</p>
-                  <p className="flex items-center justify-center"><FaPhone className="mr-2" /> +90 555 123 4567</p>
-                  <p className="flex items-center justify-center"><FaEnvelope className="mr-2" /> gelistirici@email.com</p>
-                </div>
-                <div className="flex justify-center space-x-4">
-                  <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-blue-600 dark:hover:text-blue-400">
-                    <FaGithub />
-                  </a>
-                  <a href="https://linkedin.com/in/yourusername" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-blue-600 dark:hover:text-blue-400">
-                    <FaLinkedin />
-                  </a>
-                  <a href="https://twitter.com/yourusername" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-blue-600 dark:hover:text-blue-400">
-                    <FaTwitter />
-                  </a>
-                </div>
-              </div>
+    <div className={`${jetbrainsMono.variable} min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-white font-mono transition-colors duration-200`}>
+      <header className="bg-white dark:bg-gray-900 fixed top-0 left-0 right-0 z-10 transition-colors duration-200">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold">John Doe</h1>
+          <nav>
+            <ul className="flex space-x-4">
+              {['About', 'Skills', 'Projects', 'Contact'].map((item) => (
+                <li key={item}>
+                  <button
+                    onClick={() => scrollToSection(item.toLowerCase())}
+                    className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      activeSection === item.toLowerCase()
+                        ? 'bg-blue-500 text-white'
+                        : 'text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {item}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 transition-colors duration-200"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </header>
+      <main className="container mx-auto px-6 py-8 max-w-4xl pt-24 transition-colors duration-200">
+        <div className="space-y-20">
+          <section className="text-center">
+            <Image
+              src="/profile-picture.jpg"
+              alt="John Doe"
+              width={200}
+              height={200}
+              className="rounded-full mx-auto mb-4 border-4 border-blue-500"
+            />
+            <h2 className="text-3xl font-bold mb-2">John Doe</h2>
+            <p className="text-xl text-gray-600 mb-4">Senior Full-Stack Developer</p>
+            <div className="flex justify-center space-x-4 mb-6">
+              <a href="https://github.com/johndoe" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-blue-500 transition-colors">
+                <FaGithub />
+              </a>
+              <a href="https://linkedin.com/in/johndoe" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-blue-500 transition-colors">
+                <FaLinkedin />
+              </a>
+              <a href="https://twitter.com/johndoe" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-blue-500 transition-colors">
+                <FaTwitter />
+              </a>
             </div>
-            <div className="w-3/4 p-6 overflow-y-auto">
-              <div className="grid grid-cols-2 gap-6 h-full">
-                <section className="col-span-2">
-                  <h2 className="text-xl font-bold mb-3">Hakkımda</h2>
-                  <p className="text-sm leading-relaxed">
-                    10+ yıllık deneyime sahip, yenilikçi ve problem çözme odaklı bir full-stack geliştiriciyim. 
-                    Karmaşık web uygulamalarını tasarlama, geliştirme ve ölçeklendirme konusunda uzmanlığa sahibim.
-                    Agile metodolojileri kullanarak, yüksek performanslı ekiplerde çalışma deneyimim var.
-                    Sürekli öğrenmeye ve teknolojik gelişmeleri takip etmeye önem veriyorum.
-                  </p>
-                </section>
-                <section>
-                  <h2 className="text-xl font-bold mb-3">Yetenekler</h2>
-                  <div className="flex flex-wrap">
-                    {["JavaScript", "TypeScript", "React", "Node.js", "Python", "Docker", "AWS", "GraphQL", "MongoDB", "PostgreSQL"].map((skill) => (
-                      <span key={skill} className="bg-gray-200 dark:bg-gray-700 rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2">{skill}</span>
-                    ))}
-                  </div>
-                </section>
-                <section className="col-span-2">
-                  <h2 className="text-xl font-bold mb-3">Projelerim</h2>
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-lg font-semibold">E-Ticaret Platformu</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">React, Node.js, MongoDB</p>
-                      <p className="text-sm">Yüksek performanslı, ölçeklenebilir bir e-ticaret platformu. Özellikler: Kullanıcı kimlik doğrulama, ürün arama, sepet yönetimi, ödeme entegrasyonu.</p>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold">Task Yönetim Uygulaması</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Vue.js, Express, PostgreSQL</p>
-                      <p className="text-sm">Ekip çalışmasını kolaylaştıran bir görev yönetim uygulaması. Özellikler: Gerçek zamanlı güncellemeler, görev atama, ilerleme takibi, takvim entegrasyonu.</p>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold">Yapay Zeka Destekli Chatbot</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Python, TensorFlow, Flask</p>
-                      <p className="text-sm">Müşteri hizmetleri için geliştirilmiş yapay zeka destekli chatbot. Özellikler: Doğal dil işleme, öğrenme yeteneği, çoklu dil desteği.</p>
-                    </div>
-                  </div>
-                </section>
-              </div>
+            <div className="flex justify-center space-x-6 text-sm">
+              <p className="flex items-center"><FaMapMarkerAlt className="mr-2 text-blue-500" /> Istanbul, Turkey</p>
+              <p className="flex items-center"><FaPhone className="mr-2 text-blue-500" /> +90 555 123 4567</p>
+              <p className="flex items-center"><FaEnvelope className="mr-2 text-blue-500" /> john.doe@email.com</p>
             </div>
-          </div>
+          </section>
+
+          <motion.section
+            ref={aboutRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl font-bold mb-4">About Me</h2>
+            <p className="text-lg leading-relaxed">
+              With over 10 years of experience, I am an innovative and solution-driven full-stack developer. 
+              I specialize in designing, developing, and scaling complex web applications. 
+              My expertise lies in working with Agile methodologies and leading high-performance teams. 
+              I am passionate about continuous learning and staying at the forefront of technological advancements.
+            </p>
+          </motion.section>
+
+          <motion.section
+            ref={skillsRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl font-bold mb-4">Skills</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {["JavaScript", "TypeScript", "React", "Node.js", "Python", "Docker", "AWS", "GraphQL", "MongoDB", "PostgreSQL"].map((skill) => (
+                <div key={skill} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center shadow-sm">
+                  <span className="font-semibold dark:text-gray-200">{skill}</span>
+                </div>
+              ))}
+            </div>
+          </motion.section>
+
+          <motion.section
+            ref={projectsRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl font-bold mb-4">Projects</h2>
+            <div className="space-y-6">
+              {[
+                {
+                  title: "E-Commerce Platform",
+                  tech: "React, Node.js, MongoDB",
+                  description: "A high-performance, scalable e-commerce platform with features including user authentication, product search, cart management, and payment integration."
+                },
+                {
+                  title: "Task Management Application",
+                  tech: "Vue.js, Express, PostgreSQL",
+                  description: "A collaborative task management application featuring real-time updates, task assignment, progress tracking, and calendar integration."
+                },
+                {
+                  title: "AI-Powered Chatbot",
+                  tech: "Python, TensorFlow, Flask",
+                  description: "An AI-powered chatbot for customer service with natural language processing, learning capabilities, and multi-language support."
+                }
+              ].map((project, index) => (
+                <div key={index} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                  <h3 className="text-xl font-semibold mb-2 dark:text-gray-200">{project.title}</h3>
+                  <p className="text-blue-500 text-sm mb-2">{project.tech}</p>
+                  <p className="text-gray-700 dark:text-gray-300">{project.description}</p>
+                </div>
+              ))}
+            </div>
+          </motion.section>
+
+          <motion.section
+            ref={contactRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl font-bold mb-4">Contact Me</h2>
+            <form className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                <input type="text" id="name" name="name" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+              </div>
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <input type="email" id="email" name="email" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+              </div>
+              <div>
+                <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Message</label>
+                <textarea id="message" name="message" rows={4} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white"></textarea>
+              </div>
+              <button type="submit" className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Send Message
+              </button>
+            </form>
+          </motion.section>
         </div>
       </main>
-      <footer className="text-center py-3 text-sm">
-        <p>&copy; {new Date().getFullYear()} Geliştirici Adı. Tüm hakları saklıdır.</p>
+      <footer className="bg-white dark:bg-gray-900 mt-20 transition-colors duration-200">
+        <div className="container mx-auto px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p>&copy; {new Date().getFullYear()} John Doe. All rights reserved.</p>
+        </div>
       </footer>
     </div>
   );
