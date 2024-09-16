@@ -6,16 +6,58 @@ import { FaGithub, FaLinkedin, FaTwitter, FaEnvelope, FaMapMarkerAlt, FaPhone } 
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { motion } from "framer-motion";
+import axios from 'axios';
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains-mono",
 });
 
+interface PortfolioData {
+  name: string;
+  title: string;
+  about: string;
+  skills: string[];
+  projects: Array<{
+    title: string;
+    tech: string;
+    description: string;
+  }>;
+  contact: {
+    location: string;
+    phone: string;
+    email: string;
+  };
+  profileImage: string;
+  socialLinks: {
+    github: string;
+    linkedin: string;
+    twitter: string;
+  };
+}
+
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
   const [activeSection, setActiveSection] = useState('about');
+  const [portfolioData, setPortfolioData] = useState<PortfolioData | null>({
+    name: '',
+    title: '',
+    about: '',
+    skills: [],
+    projects: [],
+    contact: {
+      location: '',
+      phone: '',
+      email: '',
+    },
+    profileImage: '',
+    socialLinks: {
+      github: '',
+      linkedin: '',
+      twitter: '',
+    },
+  });
 
   const aboutRef = useRef<HTMLElement>(null);
   const skillsRef = useRef<HTMLElement>(null);
@@ -23,6 +65,20 @@ export default function Home() {
   const contactRef = useRef<HTMLElement>(null);
 
   useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    const fetchPortfolioData = async () => {
+      try {
+        const response = await axios.get<PortfolioData>('/api/portfolio');
+        setPortfolioData(response.data);
+        console.log('Fetched portfolio data:', response.data);
+      } catch (error) {
+        console.error('Portfolyo verisi alınamadı:', error);
+      }
+    };
+
+    fetchPortfolioData();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,7 +101,7 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted || !portfolioData) return null;
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -59,14 +115,16 @@ export default function Home() {
       contact: contactRef,
     }[sectionId];
 
-    sectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (sectionRef && sectionRef.current) {
+      sectionRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
     <div className={`${jetbrainsMono.variable} min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-white font-mono transition-colors duration-200`}>
       <header className="bg-white dark:bg-gray-900 fixed top-0 left-0 right-0 z-10 transition-colors duration-200">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">John Doe</h1>
+          <h1 className="text-2xl font-bold">{portfolioData.name}</h1>
           <nav>
             <ul className="flex space-x-4">
               {['About', 'Skills', 'Projects', 'Contact'].map((item) => (
@@ -106,29 +164,35 @@ export default function Home() {
         <div className="space-y-20">
           <section className="text-center">
             <Image
-              src="/profile-picture.jpg"
-              alt="John Doe"
+              src={portfolioData.profileImage || "/default-profile.jpg"}
+              alt={portfolioData.name}
               width={200}
               height={200}
               className="rounded-full mx-auto mb-4 border-4 border-blue-500"
             />
-            <h2 className="text-3xl font-bold mb-2">John Doe</h2>
-            <p className="text-xl text-gray-600 mb-4">Senior Full-Stack Developer</p>
+            <h2 className="text-3xl font-bold mb-2">{portfolioData.name}</h2>
+            <p className="text-xl text-gray-600 mb-4">{portfolioData.title}</p>
             <div className="flex justify-center space-x-4 mb-6">
-              <a href="https://github.com/johndoe" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-blue-500 transition-colors">
-                <FaGithub />
-              </a>
-              <a href="https://linkedin.com/in/johndoe" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-blue-500 transition-colors">
-                <FaLinkedin />
-              </a>
-              <a href="https://twitter.com/johndoe" target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-blue-500 transition-colors">
-                <FaTwitter />
-              </a>
+              {portfolioData?.socialLinks?.github && (
+                <a href={portfolioData.socialLinks.github} target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-blue-500 transition-colors">
+                  <FaGithub />
+                </a>
+              )}
+              {portfolioData?.socialLinks?.linkedin && (
+                <a href={portfolioData.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-blue-500 transition-colors">
+                  <FaLinkedin />
+                </a>
+              )}
+              {portfolioData?.socialLinks?.twitter && (
+                <a href={portfolioData.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="text-2xl hover:text-blue-500 transition-colors">
+                  <FaTwitter />
+                </a>
+              )}
             </div>
             <div className="flex justify-center space-x-6 text-sm">
-              <p className="flex items-center"><FaMapMarkerAlt className="mr-2 text-blue-500" /> Istanbul, Turkey</p>
-              <p className="flex items-center"><FaPhone className="mr-2 text-blue-500" /> +90 555 123 4567</p>
-              <p className="flex items-center"><FaEnvelope className="mr-2 text-blue-500" /> john.doe@email.com</p>
+              <p className="flex items-center"><FaMapMarkerAlt className="mr-2 text-blue-500" /> {portfolioData.contact.location}</p>
+              <p className="flex items-center"><FaPhone className="mr-2 text-blue-500" /> {portfolioData.contact.phone}</p>
+              <p className="flex items-center"><FaEnvelope className="mr-2 text-blue-500" /> {portfolioData.contact.email}</p>
             </div>
           </section>
 
@@ -139,12 +203,7 @@ export default function Home() {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-2xl font-bold mb-4">About Me</h2>
-            <p className="text-lg leading-relaxed">
-              With over 10 years of experience, I am an innovative and solution-driven full-stack developer. 
-              I specialize in designing, developing, and scaling complex web applications. 
-              My expertise lies in working with Agile methodologies and leading high-performance teams. 
-              I am passionate about continuous learning and staying at the forefront of technological advancements.
-            </p>
+            <p className="text-lg leading-relaxed">{portfolioData.about}</p>
           </motion.section>
 
           <motion.section
@@ -155,7 +214,7 @@ export default function Home() {
           >
             <h2 className="text-2xl font-bold mb-4">Skills</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {["JavaScript", "TypeScript", "React", "Node.js", "Python", "Docker", "AWS", "GraphQL", "MongoDB", "PostgreSQL"].map((skill) => (
+              {portfolioData.skills.map((skill) => (
                 <div key={skill} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-center shadow-sm">
                   <span className="font-semibold dark:text-gray-200">{skill}</span>
                 </div>
@@ -171,23 +230,7 @@ export default function Home() {
           >
             <h2 className="text-2xl font-bold mb-4">Projects</h2>
             <div className="space-y-6">
-              {[
-                {
-                  title: "E-Commerce Platform",
-                  tech: "React, Node.js, MongoDB",
-                  description: "A high-performance, scalable e-commerce platform with features including user authentication, product search, cart management, and payment integration."
-                },
-                {
-                  title: "Task Management Application",
-                  tech: "Vue.js, Express, PostgreSQL",
-                  description: "A collaborative task management application featuring real-time updates, task assignment, progress tracking, and calendar integration."
-                },
-                {
-                  title: "AI-Powered Chatbot",
-                  tech: "Python, TensorFlow, Flask",
-                  description: "An AI-powered chatbot for customer service with natural language processing, learning capabilities, and multi-language support."
-                }
-              ].map((project, index) => (
+              {portfolioData.projects.map((project, index) => (
                 <div key={index} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow-sm">
                   <h3 className="text-xl font-semibold mb-2 dark:text-gray-200">{project.title}</h3>
                   <p className="text-blue-500 text-sm mb-2">{project.tech}</p>
@@ -226,7 +269,7 @@ export default function Home() {
       </main>
       <footer className="bg-white dark:bg-gray-900 mt-20 transition-colors duration-200">
         <div className="container mx-auto px-6 py-4 text-center text-sm text-gray-600 dark:text-gray-400">
-          <p>&copy; {new Date().getFullYear()} John Doe. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {portfolioData.name}. All rights reserved.</p>
         </div>
       </footer>
     </div>
