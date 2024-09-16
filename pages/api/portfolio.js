@@ -34,11 +34,16 @@ export default async function handler(req, res) {
           }
 
           let portfolioData;
-          try {
-            portfolioData = JSON.parse(fields.portfolioData);
-          } catch (error) {
-            console.error('JSON parsing error:', error);
-            return res.status(400).json({ error: 'Invalid portfolioData JSON' });
+          if (fields.portfolioData) {
+            try {
+              portfolioData = JSON.parse(fields.portfolioData);
+            } catch (error) {
+              console.error('JSON parsing error:', error);
+              return res.status(400).json({ error: 'Invalid portfolioData JSON' });
+            }
+          } else {
+            console.error('portfolioData field not found');
+            return res.status(400).json({ error: 'portfolioData field is missing' });
           }
 
           if (files.profileImage && files.profileImage.filepath) {

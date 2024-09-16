@@ -163,13 +163,15 @@ export default function Home() {
       <main className="container mx-auto px-6 py-8 max-w-4xl pt-24 transition-colors duration-200">
         <div className="space-y-20">
           <section className="text-center">
-            <Image
-              src={portfolioData.profileImage || "/uploads/default-profile.jpg"}
-              alt={portfolioData.name}
-              width={200}
-              height={200}
-              className="rounded-full mx-auto mb-4 border-4 border-blue-500"
-            />
+            <div className="w-48 h-48 mx-auto mb-4 rounded-full overflow-hidden border-4 border-blue-500">
+              <Image
+                src={portfolioData.profileImage || "/uploads/default-profile.jpg"}
+                alt={portfolioData.name}
+                width={192}
+                height={192}
+                className="object-cover object-center w-full h-full"
+              />
+            </div>
             <h2 className="text-3xl font-bold mb-2">{portfolioData.name}</h2>
             <p className="text-xl text-gray-600 mb-4">{portfolioData.title}</p>
             <div className="flex justify-center space-x-4 mb-6">

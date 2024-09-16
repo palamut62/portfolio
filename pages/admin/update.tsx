@@ -39,7 +39,6 @@ export default function UpdatePortfolio() {
   });
   const [newSkill, setNewSkill] = useState('');
   const [newProject, setNewProject] = useState({ title: '', tech: '', description: '' });
-  const [profileImage, setProfileImage] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const router = useRouter();
 
@@ -103,9 +102,13 @@ export default function UpdatePortfolio() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setProfileImage(file);
-      setPreviewImage(URL.createObjectURL(file));
-      console.log('Profile image selected:', file.name);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setPortfolioData(prev => ({ ...prev, profileImage: base64String }));
+        setPreviewImage(base64String);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -119,28 +122,25 @@ export default function UpdatePortfolio() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const formData = new FormData();
-      formData.append('portfolioData', JSON.stringify({
-        ...portfolioData,
-        profileImage: previewImage || portfolioData.profileImage,
-      }));
-      if (profileImage) {
-        formData.append('profileImage', profileImage);
-      }
+    const formData = new FormData();
+    formData.append('portfolioData', JSON.stringify(portfolioData));
+    // Diğer form alanlarını ekleyin...
 
+    try {
       const response = await axios.post('/api/portfolio', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       console.log('API response:', response.data);
       alert('Portfolyo başarıyla güncellendi!');
       router.push('/');
     } catch (error) {
-      console.error('Portfolyo güncellenirken hata oluştu:', error);
       if (axios.isAxiosError(error)) {
-        console.error('Hata detayları:', error.response?.data);
+        console.error('Portfolyo güncellenirken hata oluştu:', error.response?.data || error.message);
+        alert(`Portfolyo güncellenirken bir hata oluştu: ${error.response?.data?.error || error.message}`);
+      } else {
+        console.error('Beklenmeyen bir hata oluştu:', error);
+        alert('Beklenmeyen bir hata oluştu');
       }
-      alert('Portfolyo güncellenirken bir hata oluştu.');
     }
   };
 
