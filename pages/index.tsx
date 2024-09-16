@@ -164,7 +164,7 @@ export default function Home() {
         <div className="space-y-20">
           <section className="text-center">
             <Image
-              src={portfolioData.profileImage || "/default-profile.jpg"}
+              src={portfolioData.profileImage || "/uploads/default-profile.jpg"}
               alt={portfolioData.name}
               width={200}
               height={200}
