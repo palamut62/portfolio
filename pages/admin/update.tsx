@@ -121,7 +121,10 @@ export default function UpdatePortfolio() {
     e.preventDefault();
     try {
       const formData = new FormData();
-      formData.append('portfolioData', JSON.stringify(portfolioData));
+      formData.append('portfolioData', JSON.stringify({
+        ...portfolioData,
+        profileImage: previewImage || portfolioData.profileImage,
+      }));
       if (profileImage) {
         formData.append('profileImage', profileImage);
       }

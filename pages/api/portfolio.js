@@ -64,6 +64,7 @@ export default async function handler(req, res) {
             const updatedPortfolio = {
               ...existingPortfolio,
               ...portfolioData,
+              profileImage: portfolioData.profileImage || existingPortfolio?.profileImage,
               socialLinks: {
                 ...existingPortfolio?.socialLinks,
                 ...portfolioData.socialLinks
