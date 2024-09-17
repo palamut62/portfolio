@@ -53,6 +53,7 @@ interface PinnedRepo {
     nodes: Array<{ name: string }>
   };
   readmeContent?: string;
+  readmeImage?: string;
 }
 
 export default function Home() {
@@ -226,17 +227,28 @@ export default function Home() {
                 }
               );
               const readmeContent = readmeResponse.data;
-              // README içeriğinden ilk cümleyi al (en fazla 100 karakter)
+              
+              // İlk cümleyi al
               const firstSentence = readmeContent.split(/[.!?]/, 1)[0].trim();
               const shortReadme = firstSentence.length > 100 ? firstSentence.slice(0, 97) + '...' : firstSentence;
-              return { ...repo, readmeContent: shortReadme };
+              
+              // İlk resmi bul
+              const imageMatch = readmeContent.match(/!\[.*?\]\((.*?)\)/);
+              const imageUrl = imageMatch ? imageMatch[1] : null;
+              
+              // Eğer resim URL'si göreceli ise, tam URL'ye çevir
+              const fullImageUrl = imageUrl && !imageUrl.startsWith('http') 
+                ? `https://raw.githubusercontent.com/${portfolioData.githubUsername}/${repo.name}/main/${imageUrl}`
+                : imageUrl;
+
+              return { ...repo, readmeContent: shortReadme, readmeImage: fullImageUrl };
             } catch (error) {
               console.error(`README alınamadı: ${repo.name}`, error);
               return repo;
             }
           }));
 
-          console.log("Fetched pinned repos with short README:", reposWithReadme);
+          console.log("Fetched pinned repos with short README and image:", reposWithReadme);
           setPinnedRepos(reposWithReadme);
         } catch (error) {
           console.error('GitHub pinned repoları alınamadı:', error);
@@ -410,9 +422,12 @@ export default function Home() {
                     <p className="text-blue-500 text-sm mb-2">{repo.languages.nodes[0]?.name}</p>
                     <p className="text-gray-700 dark:text-gray-300 mb-2">{repo.description}</p>
                     {repo.readmeContent && (
-                      <p className="text-gray-600 dark:text-gray-400 text-sm italic">
+                      <p className="text-gray-600 dark:text-gray-400 text-sm italic mb-2">
                         "{repo.readmeContent}"
                       </p>
+                    )}
+                    {repo.readmeImage && (
+                      <img src={repo.readmeImage} alt={`${repo.name} preview`} className="w-full h-auto rounded-md" />
                     )}
                   </div>
                 ))
