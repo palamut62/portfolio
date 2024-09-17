@@ -37,8 +37,18 @@ export default function UpdatePortfolio() {
   const router = useRouter();
 
   useEffect(() => {
-    fetchPortfolioData();
-  }, []);
+    // Sadece geliştirme ortamında ve localhost'ta çalışmasını sağla
+    if (process.env.NODE_ENV !== 'development' || typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
+      router.push('/');
+    } else {
+      fetchPortfolioData();
+    }
+  }, [router]);
+
+  // Eğer geliştirme ortamında değilse veya localhost değilse, hiçbir şey render etme
+  if (process.env.NODE_ENV !== 'development' || typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
+    return null;
+  }
 
   const fetchPortfolioData = async () => {
     try {

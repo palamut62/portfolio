@@ -469,7 +469,7 @@ export default function Home() {
                   required
                 />
               </div>
-              <div>
+              <div className="mb-4">
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Message</label>
                 <textarea
                   id="message"

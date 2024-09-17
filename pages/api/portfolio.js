@@ -11,6 +11,11 @@ export const config = {
 };
 
 export default async function handler(req, res) {
+  // Sadece geliştirme ortamında ve localhost'ta çalışmasını sağla
+  if (process.env.NODE_ENV !== 'development' || !req.headers.host.includes('localhost')) {
+    return res.status(403).json({ error: 'Bu işlem sadece yerel geliştirme ortamında kullanılabilir.' });
+  }
+
   const client = await clientPromise
   const db = client.db("myportfolio")
 
@@ -19,7 +24,8 @@ export default async function handler(req, res) {
       try {
         const portfolio = await db.collection('portfolios').findOne()
         // GitHub kullanıcı adını ekleyin
-        portfolio.githubUsername = 'palamut62' // Buraya kendi GitHub kullanıcı adınızı yazın
+        portfolio.githubUsername = process.env.GITHUB_USERNAME
+  
         res.status(200).json(portfolio)
       } catch (error) {
         res.status(500).json({ error: 'Failed to fetch portfolio data' })
