@@ -52,6 +52,7 @@ interface PinnedRepo {
   languages: {
     nodes: Array<{ name: string }>
   };
+  readmeContent?: string;
 }
 
 export default function Home() {
@@ -211,8 +212,32 @@ export default function Home() {
           );
 
           const repos = response.data.data.user.pinnedItems.nodes;
-          console.log("Fetched pinned repos:", repos);
-          setPinnedRepos(repos);
+          
+          // README içeriklerini çek
+          const reposWithReadme = await Promise.all(repos.map(async (repo) => {
+            try {
+              const readmeResponse = await axios.get(
+                `https://api.github.com/repos/${portfolioData.githubUsername}/${repo.name}/readme`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`,
+                    Accept: 'application/vnd.github.v3.raw',
+                  },
+                }
+              );
+              const readmeContent = readmeResponse.data;
+              // README içeriğinden ilk cümleyi al (en fazla 100 karakter)
+              const firstSentence = readmeContent.split(/[.!?]/, 1)[0].trim();
+              const shortReadme = firstSentence.length > 100 ? firstSentence.slice(0, 97) + '...' : firstSentence;
+              return { ...repo, readmeContent: shortReadme };
+            } catch (error) {
+              console.error(`README alınamadı: ${repo.name}`, error);
+              return repo;
+            }
+          }));
+
+          console.log("Fetched pinned repos with short README:", reposWithReadme);
+          setPinnedRepos(reposWithReadme);
         } catch (error) {
           console.error('GitHub pinned repoları alınamadı:', error);
         }
@@ -372,7 +397,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-2xl font-bold mb-4">Projects</h2>
+            <h2 className="text-2xl font-bold mb-4">Projeler</h2>
             <div className="space-y-6">
               {pinnedRepos.length > 0 ? (
                 pinnedRepos.map((repo) => (
@@ -383,7 +408,12 @@ export default function Home() {
                       </a>
                     </h3>
                     <p className="text-blue-500 text-sm mb-2">{repo.languages.nodes[0]?.name}</p>
-                    <p className="text-gray-700 dark:text-gray-300">{repo.description}</p>
+                    <p className="text-gray-700 dark:text-gray-300 mb-2">{repo.description}</p>
+                    {repo.readmeContent && (
+                      <p className="text-gray-600 dark:text-gray-400 text-sm italic">
+                        "{repo.readmeContent}"
+                      </p>
+                    )}
                   </div>
                 ))
               ) : (
