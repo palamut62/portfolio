@@ -1,6 +1,8 @@
 # Modern Portföyo Web Sitesi
 
-![Portfolio Screenshot](portfolio.png)
+![Portfolio Screenshot](portfolio1.png)
+![Portfolio Screenshot](portfolio2.png)
+![Portfolio Screenshot](portfolio3.png)
 
 Bu proje, Next.js, TypeScript, Tailwind CSS ve MongoDB kullanılarak oluşturulmuş dinamik bir portföyo web sitesidir.
 
