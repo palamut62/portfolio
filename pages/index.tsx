@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { motion } from "framer-motion";
 import axios from 'axios';
+import { Octokit } from "@octokit/rest";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -34,6 +35,23 @@ interface PortfolioData {
     linkedin: string;
     twitter: string;
   };
+  githubUsername: string;
+}
+
+interface GithubRepo {
+  name: string;
+  description: string;
+  html_url: string;
+  language: string;
+}
+
+interface PinnedRepo {
+  name: string;
+  description: string;
+  url: string;
+  languages: {
+    nodes: Array<{ name: string }>
+  };
 }
 
 export default function Home() {
@@ -57,6 +75,7 @@ export default function Home() {
       linkedin: '',
       twitter: '',
     },
+    githubUsername: '',
   });
 
   const aboutRef = useRef<HTMLElement>(null);
@@ -67,6 +86,9 @@ export default function Home() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+
+  const [githubRepos, setGithubRepos] = useState<GithubRepo[]>([]);
+  const [pinnedRepos, setPinnedRepos] = useState<PinnedRepo[]>([]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -112,6 +134,93 @@ export default function Home() {
 
     fetchPortfolioData();
   }, []);
+
+  useEffect(() => {
+    const fetchGithubRepos = async () => {
+      console.log("Fetching GitHub repos for:", portfolioData?.githubUsername);
+      if (portfolioData?.githubUsername) {
+        const octokit = new Octokit();
+        try {
+          const repoNames = ['repo1', 'repo2', 'repo3']; // Gerçek repo isimlerinizle değiştirin
+          console.log("Fetching these repos:", repoNames);
+          const repos = await Promise.all(
+            repoNames.map(async (repoName) => {
+              try {
+                const { data } = await octokit.repos.get({
+                  owner: portfolioData.githubUsername,
+                  repo: repoName,
+                });
+                console.log("Fetched repo:", data.name);
+                return {
+                  name: data.name,
+                  description: data.description,
+                  html_url: data.html_url,
+                  language: data.language,
+                };
+              } catch (error) {
+                console.error(`Repo alınamadı: ${repoName}`, error);
+                return null;
+              }
+            })
+          );
+          const filteredRepos = repos.filter((repo): repo is GithubRepo => repo !== null);
+          console.log("Filtered repos:", filteredRepos);
+          setGithubRepos(filteredRepos);
+        } catch (error) {
+          console.error('GitHub repoları alınamadı:', error);
+        }
+      }
+    };
+
+    fetchGithubRepos();
+  }, [portfolioData?.githubUsername]);
+
+  useEffect(() => {
+    const fetchPinnedRepos = async () => {
+      if (portfolioData?.githubUsername) {
+        try {
+          const query = `
+            query {
+              user(login: "${portfolioData.githubUsername}") {
+                pinnedItems(first: 6, types: REPOSITORY) {
+                  nodes {
+                    ... on Repository {
+                      name
+                      description
+                      url
+                      languages(first: 1) {
+                        nodes {
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          `;
+
+          const response = await axios.post(
+            'https://api.github.com/graphql',
+            { query },
+            {
+              headers: {
+                Authorization: `Bearer ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`,
+              },
+            }
+          );
+
+          const repos = response.data.data.user.pinnedItems.nodes;
+          console.log("Fetched pinned repos:", repos);
+          setPinnedRepos(repos);
+        } catch (error) {
+          console.error('GitHub pinned repoları alınamadı:', error);
+        }
+      }
+    };
+
+    fetchPinnedRepos();
+  }, [portfolioData?.githubUsername]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -265,13 +374,21 @@ export default function Home() {
           >
             <h2 className="text-2xl font-bold mb-4">Projects</h2>
             <div className="space-y-6">
-              {portfolioData.projects.map((project, index) => (
-                <div key={index} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow-sm">
-                  <h3 className="text-xl font-semibold mb-2 dark:text-gray-200">{project.title}</h3>
-                  <p className="text-blue-500 text-sm mb-2">{project.tech}</p>
-                  <p className="text-gray-700 dark:text-gray-300">{project.description}</p>
-                </div>
-              ))}
+              {pinnedRepos.length > 0 ? (
+                pinnedRepos.map((repo) => (
+                  <div key={repo.name} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+                    <h3 className="text-xl font-semibold mb-2 dark:text-gray-200">
+                      <a href={repo.url} target="_blank" rel="noopener noreferrer" className="hover:text-blue-500">
+                        {repo.name}
+                      </a>
+                    </h3>
+                    <p className="text-blue-500 text-sm mb-2">{repo.languages.nodes[0]?.name}</p>
+                    <p className="text-gray-700 dark:text-gray-300">{repo.description}</p>
+                  </div>
+                ))
+              ) : (
+                <p>Yüklenecek proje bulunamadı.</p>
+              )}
             </div>
           </motion.section>
 

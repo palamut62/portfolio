@@ -18,6 +18,8 @@ export default async function handler(req, res) {
     case 'GET':
       try {
         const portfolio = await db.collection('portfolios').findOne()
+        // GitHub kullanıcı adını ekleyin
+        portfolio.githubUsername = 'palamut62' // Buraya kendi GitHub kullanıcı adınızı yazın
         res.status(200).json(portfolio)
       } catch (error) {
         res.status(500).json({ error: 'Failed to fetch portfolio data' })
