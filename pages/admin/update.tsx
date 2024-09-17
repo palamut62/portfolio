@@ -2,17 +2,13 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
+import Link from 'next/link'; // Link bileşenini ekleyin
 
 interface PortfolioData {
   name: string;
   title: string;
   about: string;
   skills: string[];
-  projects: Array<{
-    title: string;
-    tech: string;
-    description: string;
-  }>;
   contact: {
     location: string;
     phone: string;
@@ -32,13 +28,11 @@ export default function UpdatePortfolio() {
     title: '',
     about: '',
     skills: [],
-    projects: [],
     contact: { location: '', phone: '', email: '' },
     profileImage: '',
     socialLinks: { github: '', linkedin: '', twitter: '' },
   });
   const [newSkill, setNewSkill] = useState('');
-  const [newProject, setNewProject] = useState({ title: '', tech: '', description: '' });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const router = useRouter();
 
@@ -82,20 +76,6 @@ export default function UpdatePortfolio() {
     setPortfolioData((prev) => ({
       ...prev,
       skills: prev.skills.filter((skill) => skill !== skillToRemove),
-    }));
-  };
-
-  const handleAddProject = () => {
-    if (newProject.title && newProject.tech && newProject.description) {
-      setPortfolioData((prev) => ({ ...prev, projects: [...prev.projects, newProject] }));
-      setNewProject({ title: '', tech: '', description: '' });
-    }
-  };
-
-  const handleRemoveProject = (index: number) => {
-    setPortfolioData((prev) => ({
-      ...prev,
-      projects: prev.projects.filter((_, i) => i !== index),
     }));
   };
 
@@ -146,7 +126,13 @@ export default function UpdatePortfolio() {
 
   return (
     <div className="container mx-auto p-4 max-w-3xl">
-      <h1 className="text-3xl font-bold mb-6 text-center">Portfolyo Güncelleme</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-center">Portfolyo Güncelleme</h1>
+        <Link href="/" className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+          Anasayfa
+        </Link>
+      </div>
+      
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <label className="block text-lg font-medium text-gray-700">Profil Resmi</label>
@@ -223,54 +209,6 @@ export default function UpdatePortfolio() {
         </div>
 
         <div className="space-y-2">
-          <label className="block text-lg font-medium text-gray-700">Projeler</label>
-          {portfolioData.projects.map((project, index) => (
-            <div key={index} className="mb-4 p-3 border rounded shadow-sm">
-              <h3 className="font-bold text-lg text-gray-700">{project.title}</h3>
-              <p className="text-sm text-gray-600">{project.tech}</p>
-              <p className="mt-1 text-gray-700">{project.description}</p>
-              <button
-                type="button"
-                onClick={() => handleRemoveProject(index)}
-                className="mt-2 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                Kaldır
-              </button>
-            </div>
-          ))}
-          <div className="space-y-2 border-t pt-4">
-            <input
-              type="text"
-              value={newProject.title}
-              onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
-              placeholder="Proje başlığı"
-              className="w-full p-2 border rounded shadow-sm text-gray-700"
-            />
-            <input
-              type="text"
-              value={newProject.tech}
-              onChange={(e) => setNewProject({ ...newProject, tech: e.target.value })}
-              placeholder="Kullanılan teknolojiler"
-              className="w-full p-2 border rounded shadow-sm text-gray-700"
-            />
-            <textarea
-              value={newProject.description}
-              onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-              placeholder="Proje açıklaması"
-              className="w-full p-2 border rounded shadow-sm text-gray-700"
-              rows={3}
-            />
-            <button
-              type="button"
-              onClick={handleAddProject}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-            >
-              Proje Ekle
-            </button>
-          </div>
-        </div>
-
-        <div className="space-y-2">
           <label className="block text-lg font-medium text-gray-700">İletişim Bilgileri</label>
           <input
             type="text"
@@ -326,9 +264,14 @@ export default function UpdatePortfolio() {
           />
         </div>
 
-        <button type="submit" className="w-full px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 font-medium">
-          Portfolyoyu Güncelle
-        </button>
+        <div className="mt-6 flex justify-between">
+          <Link href="/" className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+            Anasayfa
+          </Link>
+          <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 font-medium">
+            Portfolyoyu Güncelle
+          </button>
+        </div>
       </form>
     </div>
   );
